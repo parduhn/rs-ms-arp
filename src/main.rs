@@ -8,9 +8,9 @@ mod api;
 mod router;
 
 fn main() {
-    let port = env::var("PORT").unwrap_or("8081".to_string());
+    let port = env::var("PORT").unwrap_or("4010".to_string());
 
-    let sys = System::new("arp-microsvc");
+    let sys = System::new("ms-arp");
     server::new(move || router::app_state())
         .bind(format!("0.0.0.0:{}", &port))
         .unwrap()
@@ -18,5 +18,4 @@ fn main() {
         .start();
     println!("app started on port {}", port);
     sys.run();
-
 }
