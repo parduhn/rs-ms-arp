@@ -6,7 +6,9 @@ Service to recive devices via ARP in network
 * API matches each MAC address against cached list in app state
 * API calls macvendors.com for each MAC that is found that is not in app state
 * Results from macvendors are added to cache
-* Response is returned to requester
+
+## Run
+Run wiht `sudo cargo run` and open http://localhost:4010/arp
 
 ## Call via Rest service
 GET /arp

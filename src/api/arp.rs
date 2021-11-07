@@ -47,7 +47,6 @@ pub fn send_arp_packet(
     arp_packet.set_target_proto_addr(target_ip);
 
     ethernet_packet.set_payload(arp_packet.packet_mut());
-
     tx.send_to(ethernet_packet.packet(), Some(interface));
 }
 
@@ -194,3 +193,22 @@ pub fn arp_handler(req: HttpRequest<AppState>) -> HttpResponse {
         }
     }
 }
+
+pub fn arp_handler_push(state: AppState) {
+    let iface = state.interface.clone();
+    match state.knowns.lock() {
+        Ok(mut k) => {
+            //read list of knowns,
+            //if a mac addr on local network is not in list of knowns, call vendor api, then store results from api back into knowns
+            match arp_results(iface, &mut k) {
+                Ok(response) => println!("{:?}", response),
+                Err(_) => println!("Error in push"),
+            }
+        }
+        Err(e) => {
+            println!("error obtaining mutex lock: {}", e);
+            // HttpResponse::InternalServerError().finish()
+        }
+    }
+}
+//

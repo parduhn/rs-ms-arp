@@ -1,12 +1,15 @@
 [package]
-name = "arp-microsvc"
-version = "0.1.0"
-authors = ["Bryant Deters <bryantdeters@gmail.com>"]
+name = "ms_arp"
+version = "0.1.1"
+authors = ["Hayo Parduhn <Hayo@Parduhn.de>"]
 edition = "2018"
 
 [dependencies]
+# lib_mq = { git = "ssh://git@github.com/parduhn/rs-lb-mq.git" }
+lib_mq = { path = "../lb-mq"}
 actix-web="0.7.19"
 ipnetwork = "0.18.0"
+nix = "0.22.1"
 pnet = "0.28.0"
 reqwest = "0.9.11"
 serde = "1.0"
