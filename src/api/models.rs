@@ -1,7 +1,7 @@
 use pnet::datalink::NetworkInterface;
 use std::sync::{Arc, Mutex};
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct ArpResponse {
     pub mac_addr: String,
     pub vendor_name: String,
@@ -20,6 +20,6 @@ pub struct AppState {
 
 impl PartialEq for ArpResponse {
     fn eq(&self, other: &ArpResponse) -> bool {
-        self.mac_addr == other.mac_addr
+        self.mac_addr == other.mac_addr && self.ip4 == other.ip4
     }
 }

@@ -1,8 +1,7 @@
-use actix_web::{HttpRequest, HttpResponse};
 use pnet::datalink::{self, Channel, MacAddr, NetworkInterface};
 use std::net::{IpAddr, Ipv4Addr};
-use std::sync::mpsc::{self, Receiver, SendError, Sender};
-use std::{env, error::Error, thread, time, time::Duration};
+use std::sync::mpsc::{self, Receiver, Sender};
+use std::{env, thread, time::Duration};
 
 use pnet::packet::arp::MutableArpPacket;
 use pnet::packet::ethernet::MutableEthernetPacket;
@@ -14,6 +13,7 @@ use pnet::packet::arp::{ArpHardwareTypes, ArpOperation, ArpOperations, ArpPacket
 use crate::api::macvendor::vendor_request;
 use crate::api::models::{AppState, ArpResponse, ArpResponses};
 use ipnetwork::IpNetwork;
+use lib_mq;
 
 pub fn send_arp_packet(
     interface: NetworkInterface,
@@ -72,13 +72,14 @@ pub fn recv_arp_packets(interface: NetworkInterface, tx: Sender<ArpResponse>) {
                             ip4: arp_packet.get_sender_proto_addr().to_string(),
                             vendor_name: "".to_string(),
                         };
-                        match tx.send(result) {
-                            Ok(()) => (),
-                            Err(SendError(e)) => {
-                                dbg!(e);
-                                ()
-                            }
-                        }
+                        tx.send(result);
+                        // match tx.send(result) {
+                        //     Ok(()) => (),
+                        //     Err(SendError(e)) => {
+                        //         dbg!(e);
+                        //         ()
+                        //     }
+                        // }
                     }
                 }
                 Err(e) => panic!("An error occurred while reading packet: {}", e),
@@ -88,17 +89,17 @@ pub fn recv_arp_packets(interface: NetworkInterface, tx: Sender<ArpResponse>) {
 }
 
 //set up a channel, call send and recv
-pub fn arp_results(
-    interface: NetworkInterface,
-    knowns: &mut ArpResponses,
-) -> Result<ArpResponses, Box<Error>> {
+pub fn arp_results(interface: NetworkInterface, knowns: &mut ArpResponses) {
     //optional variable to add a comma-separated list of known mac addresses to ignore from displaying
     let ignores = env::var("IGNORE").unwrap_or_default();
     let ignores_vec: Vec<&str> = ignores.split(",").collect();
 
     //the url for the api that returns vendor information from the mac addr
     let vendor_url = env::var("MACVENDOR_URL").unwrap_or("https://api.macvendors.com".to_string());
-    let source_mac = interface.mac_address();
+    let source_mac = match interface.mac {
+        Some(m) => m,
+        None => panic!("Error in mac"),
+    };
     let source_network = interface.ips.iter().find(|ip| ip.is_ipv4()).unwrap();
     let source_ip = source_network.ip();
 
@@ -122,92 +123,67 @@ pub fn arp_results(
             println!("Error while attempting to get network for interface: {}", e);
         }
     }
-    thread::sleep(Duration::from_secs(4));
     let mut arp_list: Vec<ArpResponse> = Vec::new();
     for _ in 0..sent {
         match rx.try_recv() {
             Ok(arp_res) => arp_list.push(arp_res),
+            // Ok(arp_res) => println!("Result: {:?}", arp_res),
             Err(_) => break,
         }
     }
-    let mut output = ArpResponses {
-        results: Vec::new(),
-    };
+
+    let mq_par =
+        lib_mq::build_topic_parameter("amqp://timeover:timeover@localhost:5672", "timeover");
+
     for m in arp_list {
-        let short_mac = &m.mac_addr.to_string()[..8]; //only the first 6 hex characters are required to obtain vendor name and compare.
-        if !ignores_vec.contains(&short_mac)
-            && !knowns.results.contains(&ArpResponse {
-                mac_addr: short_mac.to_string(),
-                vendor_name: "".to_string(),
-                ip4: m.ip4.clone(),
-            })
-        {
-            //mac addr -> String -> &str
-            thread::sleep(Duration::from_secs(1));
+        let mut device = ArpResponse {
+            mac_addr: m.mac_addr.to_string(),
+            vendor_name: "unkown".to_string(),
+            ip4: m.ip4.clone(),
+        };
+
+        let short_mac = &m.mac_addr.to_string()[..8];
+        if !ignores_vec.contains(&short_mac) && !knowns.results.contains(&device) {
             match vendor_request(&vendor_url, short_mac) {
                 Ok(s) => {
-                    output.results.push(ArpResponse {
-                        mac_addr: short_mac.to_string(),
-                        vendor_name: s.clone(),
-                        ip4: m.ip4.clone(),
-                    });
-                    knowns.results.push(ArpResponse {
-                        mac_addr: short_mac.to_string(),
-                        vendor_name: s,
-                        ip4: "".to_string(),
-                    });
+                    device.vendor_name = s.clone();
+                    knowns.results.push(device.clone());
                 }
                 Err(e) => {
-                    // send error, channel was closed too soon
-                    // an error here means not all responses are shown
-                    //                    println!("{:?}", e);
-                    output.results.push(ArpResponse {
-                        mac_addr: format!("{:?}", e).to_string(),
-                        vendor_name: "".to_string(),
-                        ip4: "".to_string(),
-                    })
+                    println!("Error on {:?}", e);
                 }
             }
-        }
-    }
-    println!("{:?}", output);
-    Ok(output)
-}
-
-//get interface and knowns from appstate,
-//read them both and pass them both into arp_results?
-pub fn arp_handler(req: HttpRequest<AppState>) -> HttpResponse {
-    let iface = req.state().interface.clone();
-    match req.state().knowns.lock() {
-        Ok(mut k) => {
-            //read list of knowns,
-            //if a mac addr on local network is not in list of knowns, call vendor api, then store results from api back into knowns
-            match arp_results(iface, &mut k) {
-                Ok(response) => HttpResponse::Ok().json(response),
-                Err(_) => HttpResponse::InternalServerError().finish(),
+        } else {
+            let index = knowns.results.iter().position(|r| r == &device).unwrap();
+            match knowns.results.get(index) {
+                Some(arp) => device.vendor_name = arp.vendor_name.clone(),
+                None => device.vendor_name = "stillunkown".to_string(),
             }
         }
-        Err(e) => {
-            println!("error obtaining mutex lock: {}", e);
-            HttpResponse::InternalServerError().finish()
+        let device_string = serde_json::to_string(&device).unwrap();
+        let result = lib_mq::send(&mq_par, &device_string);
+        println!("Device {:?} ", device);
+        if !result.is_ok() {
+            println!("MessageQueue error {:?}", result);
+            thread::sleep(Duration::from_secs(10));
         }
+        thread::sleep(Duration::from_secs(1));
     }
 }
 
 pub fn arp_handler_push(state: AppState) {
-    let iface = state.interface.clone();
-    match state.knowns.lock() {
-        Ok(mut k) => {
-            //read list of knowns,
-            //if a mac addr on local network is not in list of knowns, call vendor api, then store results from api back into knowns
-            match arp_results(iface, &mut k) {
-                Ok(response) => println!("{:?}", response),
-                Err(_) => println!("Error in push"),
+    loop {
+        let iface = state.interface.clone();
+        match state.knowns.lock() {
+            Ok(mut k) => {
+                //read list of knowns,
+                //if a mac addr on local network is not in list of knowns, call vendor api, then store results from api back into knowns
+                arp_results(iface, &mut k)
             }
-        }
-        Err(e) => {
-            println!("error obtaining mutex lock: {}", e);
-            // HttpResponse::InternalServerError().finish()
+            Err(e) => {
+                println!("error obtaining mutex lock: {}", e);
+                // HttpResponse::InternalServerError().finish()
+            }
         }
     }
 }

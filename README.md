@@ -1,26 +1,24 @@
 # ARP Microservice
-Service to recive devices via ARP in network 
+Service to recive devices via ARP in network and sends it to MessageQueue
 
 ## What it does
 * API sends ARP request to each IP address on local network and receives MAC addresses
 * API matches each MAC address against cached list in app state
 * API calls macvendors.com for each MAC that is found that is not in app state
-* Results from macvendors are added to cache
+* Results from macvendors are added to cache, so that macvendors is not bothered anymore
+* Sends chached and unchaced MAC and IPs to MessageQueue
 
 ## Run
-Run wiht `sudo cargo run` and open http://localhost:4010/arp
+Run wiht `sudo cargo run` 
 
-## Call via Rest service
+## Result
+Pushes messages to MessageQueue System as Json, one every second
 GET /arp
 ```json
 {
-  "results": [
-    {
-      "mac_addr": "98:01:a7",
-      "vendor_name": "Apple Inc.",
-      "ip4": "102.12.123.1"
-    }
-  ]
+  "mac_addr": "98:01:a7",
+  "vendor_name": "Apple Inc.",
+  "ip4": "102.12.123.1"
 }
 ```
 

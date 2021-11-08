@@ -5,6 +5,7 @@ use reqwest::{get, Error as RWError};
 
 //dashes are not needed for calling macvendors api, capitalization doesn't matter
 pub fn vendor_request(url: &str, mac_addr: &str) -> Result<String, RWError> {
-    let resp = get(&format!("{}/{}", url, mac_addr))?.text()?;
-    Ok(resp)
+    let resp = get(&format!("{}/{}", url, mac_addr));
+    // println!("Response {:?}", resp.status());
+    Ok(resp?.text()?)
 }
