@@ -1,6 +1,6 @@
 [package]
 name = "ms_arp"
-version = "0.1.1"
+version = "1.0.0"
 authors = ["Hayo Parduhn <Hayo@Parduhn.de>"]
 edition = "2018"
 
