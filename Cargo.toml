@@ -4,6 +4,10 @@ version = "1.0.0"
 authors = ["Hayo Parduhn <Hayo@Parduhn.de>"]
 edition = "2018"
 
+[lib]
+name = "ms_arp_lib"
+path = "src/lib.rs"
+
 [dependencies]
 # lib_mq = { git = "ssh://git@github.com/parduhn/rs-lb-mq.git" }
 lib_mq = { path = "../lb-mq"}

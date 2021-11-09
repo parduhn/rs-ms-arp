@@ -1,6 +1,6 @@
 use pnet::datalink::{self, Channel, MacAddr, NetworkInterface};
 use std::net::{IpAddr, Ipv4Addr};
-use std::sync::mpsc::{self, Receiver, Sender};
+use std::sync::mpsc::{self, Receiver, SendError, Sender};
 use std::{env, thread, time::Duration};
 
 use pnet::packet::arp::MutableArpPacket;
@@ -10,8 +10,8 @@ use pnet::packet::{MutablePacket, Packet};
 
 use pnet::packet::arp::{ArpHardwareTypes, ArpOperation, ArpOperations, ArpPacket};
 
-use crate::api::macvendor::vendor_request;
-use crate::api::models::{AppState, ArpResponse, ArpResponses};
+use crate::arp::macvendor::vendor_request;
+use crate::arp::models::{AppState, ArpResponse, ArpResponses};
 use ipnetwork::IpNetwork;
 use lib_mq;
 
@@ -72,14 +72,11 @@ pub fn recv_arp_packets(interface: NetworkInterface, tx: Sender<ArpResponse>) {
                             ip4: arp_packet.get_sender_proto_addr().to_string(),
                             vendor_name: "".to_string(),
                         };
-                        tx.send(result);
-                        // match tx.send(result) {
-                        //     Ok(()) => (),
-                        //     Err(SendError(e)) => {
-                        //         dbg!(e);
-                        //         ()
-                        //     }
-                        // }
+                        // tx.send(result);
+                        match tx.send(result) {
+                            Ok(()) => (),
+                            Err(SendError(_e)) => (),
+                        }
                     }
                 }
                 Err(e) => panic!("An error occurred while reading packet: {}", e),
@@ -126,14 +123,17 @@ pub fn arp_results(interface: NetworkInterface, knowns: &mut ArpResponses) {
     let mut arp_list: Vec<ArpResponse> = Vec::new();
     for _ in 0..sent {
         match rx.try_recv() {
-            Ok(arp_res) => arp_list.push(arp_res),
-            // Ok(arp_res) => println!("Result: {:?}", arp_res),
+            Ok(arp_res) => {
+                // println!("{:?}", arp_res);
+                arp_list.push(arp_res)
+            }
             Err(_) => break,
         }
     }
 
     let mq_par =
         lib_mq::build_topic_parameter("amqp://timeover:timeover@localhost:5672", "timeover");
+    let client = reqwest::Client::new();
 
     for m in arp_list {
         let mut device = ArpResponse {
@@ -144,7 +144,7 @@ pub fn arp_results(interface: NetworkInterface, knowns: &mut ArpResponses) {
 
         let short_mac = &m.mac_addr.to_string()[..8];
         if !ignores_vec.contains(&short_mac) && !knowns.results.contains(&device) {
-            match vendor_request(&vendor_url, short_mac) {
+            match vendor_request(&client, &vendor_url, short_mac) {
                 Ok(s) => {
                     device.vendor_name = s.clone();
                     knowns.results.push(device.clone());
@@ -171,19 +171,17 @@ pub fn arp_results(interface: NetworkInterface, knowns: &mut ArpResponses) {
     }
 }
 
-pub fn arp_handler_push(state: AppState) {
-    loop {
-        let iface = state.interface.clone();
-        match state.knowns.lock() {
-            Ok(mut k) => {
-                //read list of knowns,
-                //if a mac addr on local network is not in list of knowns, call vendor api, then store results from api back into knowns
-                arp_results(iface, &mut k)
-            }
-            Err(e) => {
-                println!("error obtaining mutex lock: {}", e);
-                // HttpResponse::InternalServerError().finish()
-            }
+pub fn arp_handler(state: &AppState) {
+    let iface = state.interface.clone();
+    match state.knowns.lock() {
+        Ok(mut k) => {
+            //read list of knowns,
+            //if a mac addr on local network is not in list of knowns, call vendor api, then store results from api back into knowns
+            arp_results(iface, &mut k)
+        }
+        Err(e) => {
+            println!("error obtaining mutex lock: {}", e);
+            // HttpResponse::InternalServerError().finish()
         }
     }
 }

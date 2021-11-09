@@ -25,3 +25,5 @@ GET /arp
 ## Based on
 A simple web API to do an [arp](https://en.wikipedia.org/wiki/Address_Resolution_Protocol) scan on the local network and get human-readable results of vendor hardware on the local wifi network.
 
+## Future
+Nmap could help to see OS and Ports: https://github.com/sommd/rustmap

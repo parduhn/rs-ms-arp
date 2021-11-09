@@ -1,9 +1,8 @@
 extern crate pnet;
-#[macro_use]
 extern crate serde_derive;
+
+use ms_arp_lib::push;
 use nix::unistd::Uid;
-mod api;
-mod push;
 
 fn main() {
     if !Uid::effective().is_root() {

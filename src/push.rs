@@ -1,5 +1,5 @@
-use crate::api::arp::arp_handler_push;
-use crate::api::models::{AppState, ArpResponses};
+use crate::arp::arp::arp_handler;
+use crate::arp::models::{AppState, ArpResponses};
 // use actix_web::{http::Method, App};
 use pnet::datalink;
 use std::sync::{Arc, Mutex};
@@ -16,5 +16,7 @@ pub fn start() {
             .unwrap()
             .to_owned(),
     };
-    arp_handler_push(app)
+    loop {
+        arp_handler(&app)
+    }
 }
