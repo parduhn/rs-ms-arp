@@ -920,7 +920,7 @@ dependencies = [
 
 [[package]]
 name = "ms_arp"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "ipnetwork",
  "lib_mq",
