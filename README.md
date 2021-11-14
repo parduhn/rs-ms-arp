@@ -23,7 +23,7 @@ Pushes messages to MessageQueue System as Json, one every second
 }
 ```
 ## Release
-Deploy service witn `deploy.sh`. This copies the batch file `start_all.sh` to the directory /timeover/serivces. Use the script to start all service in this folder. the script will create a screen in the name of the service and start each service in this screen. 
+Deploy service witn `deploy.sh`. This copies the batch file `start_all.sh` to the directory /timeover/serivces. Use the script with `bash` to start all service in this folder. the script will create a screen in the name of the service and start each service in this screen. 
 
 This is located here, because it is the first service.
 
