@@ -10,7 +10,8 @@ echo "Move build to server. Server password needed."
 cd ./target/release
 rsync -avR  --progress --exclude='.*' ms_arp hayo@10.1.2.1:/home/hayo/timeover/services/
 cd ../..
-rsync -av  --progress --exclude='.*' start_ms hayo@10.1.2.1:/home/hayo/timeover/services/
+
+rsync -av  --progress --exclude='.*' start_all.sh hayo@10.1.2.1:/home/hayo/timeover/services/
 
 echo "Start service with /timeover/services/start_all.sh"
 
