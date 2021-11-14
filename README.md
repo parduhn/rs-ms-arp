@@ -13,7 +13,7 @@ Run wiht `sudo cargo run`
 
 ## Result
 Pushes messages to MessageQueue System as Json, one every second
-GET /arp
+
 ```json
 {
   "mac_addr": "98:01:a7",
