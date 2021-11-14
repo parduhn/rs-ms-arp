@@ -11,6 +11,7 @@ Service to recive devices via ARP in network and sends it to MessageQueue
 ## Run
 Run wiht `sudo cargo run` 
 
+
 ## Result
 Pushes messages to MessageQueue System as Json, one every second
 
@@ -21,6 +22,10 @@ Pushes messages to MessageQueue System as Json, one every second
   "ip4": "102.12.123.1"
 }
 ```
+## Release
+Deploy service witn `deploy.sh`. This copies the batch file `start_all.sh` to the directory /timeover/serivces. Use the script to start all service in this folder. the script will create a screen in the name of the service and start each service in this screen. 
+
+This is located here, because it is the first service.
 
 ## Based on
 A simple web API to do an [arp](https://en.wikipedia.org/wiki/Address_Resolution_Protocol) scan on the local network and get human-readable results of vendor hardware on the local wifi network.
