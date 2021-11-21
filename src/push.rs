@@ -10,7 +10,11 @@ pub fn start() {
 
     for iface in datalink::interfaces() {
         let interface = iface.to_owned();
-        if interface.is_loopback() || interface.ips.is_empty() {
+        if interface.is_loopback()
+            || interface.ips.is_empty()
+            || !interface.name.to_string().contains("enp")
+                && !interface.name.to_string().contains("wlp")
+        {
             println!("Not using: {:?}", interface);
         } else {
             println!("Using: {:?}", interface);
@@ -24,11 +28,13 @@ pub fn start() {
         }
     }
 
-    loop {
-        println!("----------------------------------------");
-        for app in &app_states {
-            println!("Interface {:?}", app.interface.name);
-            arp_handler(&app);
+    if &app_states.len() > &0 {
+        loop {
+            println!("----------------------------------------");
+            for app in &app_states {
+                println!("Interface {:?}", app.interface.name);
+                arp_handler(&app);
+            }
         }
     }
 }
