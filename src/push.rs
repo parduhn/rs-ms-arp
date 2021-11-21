@@ -27,7 +27,7 @@ pub fn start() {
     loop {
         println!("----------------------------------------");
         for app in &app_states {
-            println!("Interface {:?}", app.name);
+            println!("Interface {:?}", app.interface.name);
             arp_handler(&app);
         }
     }
