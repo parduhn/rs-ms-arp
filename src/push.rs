@@ -6,19 +6,16 @@ use std::sync::{Arc, Mutex};
 
 pub fn start() {
     loop {
-        let interfaces = datalink::interfaces()
-            .iter()
-            // .filter(|ip| !ip.is_loopback() && !ip.ips.is_empty())
-            .next()
-            .unwrap()
-            .to_owned();
-
-        println!("{:?}", interfaces);
+        // let interfaces = datalink::interfaces()
+        //     .iter()
+        //     .filter(|ip| !ip.is_loopback() && !ip.ips.is_empty())
+        //     .next()
+        //     .unwrap()
+        //     .to_owned();
         println!("----------------------------------------");
-
         for iface in datalink::interfaces() {
             let interface = iface.to_owned();
-            if interfaces.is_loopback() || interfaces.ips.is_empty() {
+            if interface.is_loopback() || interface.ips.is_empty() {
                 println!("Not using: {:?}", interface);
             } else {
                 println!("Using: {:?}", interface);
