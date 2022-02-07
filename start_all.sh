@@ -1,7 +1,7 @@
 #! /bin/bash
 
 
-service_restart () {
+service_rust_restart () {
     export SERVICE=$service
 
     screen -D -RR $SERVICE -X quit || true
@@ -20,7 +20,7 @@ for filename in *; do
     if [[ -x "$filename" ]]
     then
         service=${filename}
-        service_restart
+        service_rust_restart
     fi;
 done
 
