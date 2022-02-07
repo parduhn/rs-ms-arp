@@ -17,3 +17,5 @@ echo "Start service with /timeover/services/start_all.sh"
 
 cargo set-version --bump patch
 
+echo "Service start cargo"
+cp ./start_cargo.sh ../../timeover/start_cargo.sh
