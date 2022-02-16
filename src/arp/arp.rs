@@ -15,7 +15,7 @@ use crate::arp::models::{AppState, ArpResponse, ArpResponses};
 use ipnetwork::IpNetwork;
 use lib_mq;
 
-pub fn send_arp_packet(
+fn send_arp_packet(
     interface: NetworkInterface,
     source_ip: Ipv4Addr,
     source_mac: MacAddr,
@@ -131,8 +131,7 @@ pub fn arp_results(interface: NetworkInterface, knowns: &mut ArpResponses) {
         }
     }
 
-    let mq_par =
-        lib_mq::build_topic_parameter("amqp://timeover:timeover@localhost:5672", "timeover");
+    let mq_par = lib_mq::build_topic_parameter("amqp://timeover:timeover@localhost:5672", "arp");
     let client = reqwest::Client::new();
 
     for m in arp_list {
