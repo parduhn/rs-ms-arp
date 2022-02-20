@@ -12,8 +12,8 @@ use pnet::packet::arp::{ArpHardwareTypes, ArpOperation, ArpOperations, ArpPacket
 
 use crate::arp::macvendor::vendor_request;
 use crate::arp::models::{AppState, ArpResponse, ArpResponses};
+use crate::arp::mq;
 use ipnetwork::IpNetwork;
-use lib_mq;
 
 fn send_arp_packet(
     interface: NetworkInterface,
@@ -86,7 +86,11 @@ pub fn recv_arp_packets(interface: NetworkInterface, tx: Sender<ArpResponse>) {
 }
 
 //set up a channel, call send and recv
-pub fn arp_results(interface: NetworkInterface, knowns: &mut ArpResponses) {
+pub fn get_arp_results(
+    interface: NetworkInterface,
+    knowns: &mut ArpResponses,
+    rx: &Receiver<ArpResponse>,
+) -> Vec<ArpResponse> {
     //optional variable to add a comma-separated list of known mac addresses to ignore from displaying
     let ignores = env::var("IGNORE").unwrap_or_default();
     let ignores_vec: Vec<&str> = ignores.split(",").collect();
@@ -97,12 +101,10 @@ pub fn arp_results(interface: NetworkInterface, knowns: &mut ArpResponses) {
         Some(m) => m,
         None => panic!("Error in mac"),
     };
+
     let source_network = interface.ips.iter().find(|ip| ip.is_ipv4()).unwrap();
     let source_ip = source_network.ip();
 
-    // Channel for ARP replies.
-    let (tx, rx): (Sender<ArpResponse>, Receiver<ArpResponse>) = mpsc::channel();
-    recv_arp_packets(interface.clone(), tx);
     let mut sent = 0;
     match source_network {
         //for mac development I had to set ipv6 to manual
@@ -131,9 +133,6 @@ pub fn arp_results(interface: NetworkInterface, knowns: &mut ArpResponses) {
         }
     }
 
-    let mq_par = lib_mq::build_topic_parameter("amqp://timeover:timeover@localhost:5672", "arp");
-    let client = reqwest::Client::new();
-
     for m in arp_list {
         let mut device = ArpResponse {
             mac_addr: m.mac_addr.to_string(),
@@ -143,7 +142,7 @@ pub fn arp_results(interface: NetworkInterface, knowns: &mut ArpResponses) {
 
         let short_mac = &m.mac_addr.to_string()[..8];
         if !ignores_vec.contains(&short_mac) && !knowns.results.contains(&device) {
-            match vendor_request(&client, &vendor_url, short_mac) {
+            match vendor_request(&vendor_url, short_mac) {
                 Ok(s) => {
                     device.vendor_name = s.clone();
                     knowns.results.push(device.clone());
@@ -159,24 +158,32 @@ pub fn arp_results(interface: NetworkInterface, knowns: &mut ArpResponses) {
                 None => device.vendor_name = "stillunkown".to_string(),
             }
         }
-        let device_string = serde_json::to_string(&device).unwrap();
-        let result = lib_mq::send(&mq_par, &device_string);
-        println!("Device {:?} ", device);
-        if !result.is_ok() {
-            println!("MessageQueue error {:?}", result);
-            thread::sleep(Duration::from_secs(10));
-        }
+
         thread::sleep(Duration::from_secs(1));
     }
+    knowns.results.clone()
 }
 
-pub fn arp_handler(state: &AppState) {
+pub fn initiate_arp_handler(state: &AppState) {
+    //start channel to listen
     let iface = state.interface.clone();
+    let (tx, rx): (Sender<ArpResponse>, Receiver<ArpResponse>) = mpsc::channel();
+    recv_arp_packets(iface.clone(), tx);
+
+    //loop with sending arp scan
+    let mut response = Vec::new();
     match state.knowns.lock() {
         Ok(mut k) => {
             //read list of knowns,
             //if a mac addr on local network is not in list of knowns, call vendor api, then store results from api back into knowns
-            arp_results(iface, &mut k)
+            loop {
+                println!("----------------------------------------");
+                response = get_arp_results(iface.clone(), &mut k, &rx);
+                for device in &response {
+                    mq::send(device);
+                    thread::sleep(Duration::from_secs(1));
+                }
+            }
         }
         Err(e) => {
             println!("error obtaining mutex lock: {}", e);
@@ -184,4 +191,3 @@ pub fn arp_handler(state: &AppState) {
         }
     }
 }
-//

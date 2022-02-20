@@ -1,6 +1,5 @@
-use crate::arp::arp::arp_handler;
+use crate::arp;
 use crate::arp::models::{AppState, ArpResponses};
-// use actix_web::{http::Method, App};
 use pnet::datalink;
 use std::sync::{Arc, Mutex};
 
@@ -29,12 +28,9 @@ pub fn start() {
     }
 
     if &app_states.len() > &0 {
-        loop {
-            println!("----------------------------------------");
-            for app in &app_states {
-                println!("Interface {:?}", app.interface.name);
-                arp_handler(&app);
-            }
+        for app in &app_states {
+            println!("Interface {:?}", app.interface.name);
+            arp::arp::initiate_arp_handler(&app);
         }
     }
 }

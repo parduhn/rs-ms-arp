@@ -8,7 +8,7 @@ pub struct ArpResponse {
     pub ip4: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct ArpResponses {
     pub results: Vec<ArpResponse>,
 }

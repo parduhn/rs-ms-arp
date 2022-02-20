@@ -8,11 +8,12 @@
 //for calling macvendor api
 //GET https://api.macvendors.com/98-01-A7 plaintext response
 
-use reqwest::{Client, Error as RWError};
+use reqwest::Error as RWError;
 
 //dashes are not needed for calling macvendors api, capitalization doesn't matter
-pub fn vendor_request(client: &Client, url: &str, mac_addr: &str) -> Result<String, RWError> {
-    println!("Get Vendor");
+pub fn vendor_request(url: &str, mac_addr: &str) -> Result<String, RWError> {
+    println!("Get Vendor of {}", mac_addr);
+    let client = reqwest::Client::new();
     let resp = client.get(&format!("{}/{}", url, mac_addr)).send();
     // println!("Response {:?}", resp.status());
     Ok(resp?.text()?)
