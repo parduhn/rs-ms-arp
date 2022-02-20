@@ -1,6 +1,6 @@
 use pnet::datalink::{self, Channel, MacAddr, NetworkInterface};
 use std::net::{IpAddr, Ipv4Addr};
-use std::sync::mpsc::{self, Receiver, SendError, Sender};
+use std::sync::mpsc::{Receiver, SendError, Sender};
 use std::{env, thread, time::Duration};
 
 use pnet::packet::arp::MutableArpPacket;
@@ -168,8 +168,8 @@ pub fn initiate_arp_handler(app_states: Vec<AppState>) {
     for state in &app_states {
         //start channel to listen
         let iface = state.interface.clone();
-        let (tx, rx): (Sender<ArpResponse>, Receiver<ArpResponse>) = mpsc::channel();
-        recv_arp_packets(iface.clone(), tx);
+
+        recv_arp_packets(iface.clone(), state.tx.clone());
 
         //loop with sending arp scan
         let mut response = Vec::new();
@@ -182,7 +182,7 @@ pub fn initiate_arp_handler(app_states: Vec<AppState>) {
                         "---------------------------------------- Interface {:?}",
                         state.interface.name
                     );
-                    response = get_arp_results(iface.clone(), &mut k, &rx);
+                    response = get_arp_results(iface.clone(), &mut k, &state.rx);
                     for device in &response {
                         mq::send(device);
                         thread::sleep(Duration::from_secs(1));

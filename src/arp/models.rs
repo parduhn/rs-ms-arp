@@ -1,4 +1,5 @@
 use pnet::datalink::NetworkInterface;
+use std::sync::mpsc::{Receiver, Sender};
 use std::sync::{Arc, Mutex};
 
 #[derive(Debug, Clone, Serialize)]
@@ -16,6 +17,8 @@ pub struct ArpResponses {
 pub struct AppState {
     pub knowns: Arc<Mutex<ArpResponses>>,
     pub interface: NetworkInterface,
+    pub tx: Sender<ArpResponse>,
+    pub rx: Receiver<ArpResponse>,
 }
 
 impl PartialEq for ArpResponse {

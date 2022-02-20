@@ -1,6 +1,7 @@
 use crate::arp;
-use crate::arp::models::{AppState, ArpResponses};
+use crate::arp::models::{AppState, ArpResponse, ArpResponses};
 use pnet::datalink;
+use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 
 pub fn start() {
@@ -9,6 +10,7 @@ pub fn start() {
 
     for iface in datalink::interfaces() {
         let interface = iface.to_owned();
+        let (tx, rx): (Sender<ArpResponse>, Receiver<ArpResponse>) = mpsc::channel();
         if interface.is_loopback()
             || interface.ips.is_empty()
             || !interface.name.to_string().contains("enp")
@@ -22,6 +24,8 @@ pub fn start() {
                     results: Vec::new(),
                 })),
                 interface,
+                tx,
+                rx,
             };
             app_states.push(app);
         }
