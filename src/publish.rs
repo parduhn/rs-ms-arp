@@ -28,9 +28,6 @@ pub fn start() {
     }
 
     if &app_states.len() > &0 {
-        for app in &app_states {
-            println!("Interface {:?}", app.interface.name);
-            arp::arp::initiate_arp_handler(&app);
-        }
+        arp::arp::initiate_arp_handler(app_states);
     }
 }

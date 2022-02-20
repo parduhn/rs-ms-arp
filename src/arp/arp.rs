@@ -164,30 +164,35 @@ pub fn get_arp_results(
     knowns.results.clone()
 }
 
-pub fn initiate_arp_handler(state: &AppState) {
-    //start channel to listen
-    let iface = state.interface.clone();
-    let (tx, rx): (Sender<ArpResponse>, Receiver<ArpResponse>) = mpsc::channel();
-    recv_arp_packets(iface.clone(), tx);
+pub fn initiate_arp_handler(app_states: Vec<AppState>) {
+    for state in &app_states {
+        //start channel to listen
+        let iface = state.interface.clone();
+        let (tx, rx): (Sender<ArpResponse>, Receiver<ArpResponse>) = mpsc::channel();
+        recv_arp_packets(iface.clone(), tx);
 
-    //loop with sending arp scan
-    let mut response = Vec::new();
-    match state.knowns.lock() {
-        Ok(mut k) => {
-            //read list of knowns,
-            //if a mac addr on local network is not in list of knowns, call vendor api, then store results from api back into knowns
-            loop {
-                println!("----------------------------------------");
-                response = get_arp_results(iface.clone(), &mut k, &rx);
-                for device in &response {
-                    mq::send(device);
-                    thread::sleep(Duration::from_secs(1));
+        //loop with sending arp scan
+        let mut response = Vec::new();
+        match state.knowns.lock() {
+            Ok(mut k) => {
+                //read list of knowns,
+                //if a mac addr on local network is not in list of knowns, call vendor api, then store results from api back into knowns
+                loop {
+                    println!(
+                        "---------------------------------------- Interface {:?}",
+                        state.interface.name
+                    );
+                    response = get_arp_results(iface.clone(), &mut k, &rx);
+                    for device in &response {
+                        mq::send(device);
+                        thread::sleep(Duration::from_secs(1));
+                    }
                 }
             }
-        }
-        Err(e) => {
-            println!("error obtaining mutex lock: {}", e);
-            // HttpResponse::InternalServerError().finish()
+            Err(e) => {
+                println!("error obtaining mutex lock: {}", e);
+                // HttpResponse::InternalServerError().finish()
+            }
         }
     }
 }
