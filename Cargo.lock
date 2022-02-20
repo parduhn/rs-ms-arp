@@ -919,8 +919,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "ms_arp"
-version = "1.0.19"
+name = "ms-arp"
+version = "1.0.21"
 dependencies = [
  "ipnetwork",
  "lib_mq",
