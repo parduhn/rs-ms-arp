@@ -28,7 +28,9 @@ start_node () {
 }
 
 killscreens () {
+    echo Killing all screens... 
     screen -ls | grep Detached | cut -d. -f1 | awk '{print $1}' | xargs kill
+    echo $(screen -ls)
 }
 
 parameter_check (){
@@ -43,6 +45,13 @@ parameter_check (){
                 killscreens
                 exit 0
         fi
+
+        if [ -n "$parameter" ]; 
+        then 
+                echo Usage start_all_dev [stop]
+                exit 0
+        fi
+
 }
 
 
