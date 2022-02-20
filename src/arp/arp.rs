@@ -170,16 +170,18 @@ pub fn initiate_arp_handler(app_states: Vec<AppState>) {
     for state in &app_states {
         //start channel to listen
         let iface = state.interface.clone();
-
         recv_arp_packets(iface.clone(), state.tx.clone());
+    }
 
-        //loop with sending arp scan
-        let mut response = Vec::new();
-        match state.knowns.lock() {
-            Ok(mut k) => {
-                //read list of knowns,
-                //if a mac addr on local network is not in list of knowns, call vendor api, then store results from api back into knowns
-                loop {
+    //loop with sending arp scan
+    loop {
+        for state in &app_states {
+            let iface = state.interface.clone();
+            let mut response = Vec::new();
+            match state.knowns.lock() {
+                Ok(mut k) => {
+                    //read list of knowns,
+                    //if a mac addr on local network is not in list of knowns, call vendor api, then store results from api back into knowns
                     println!(
                         "---------------------------------------- Interface {:?}",
                         state.interface.name
@@ -190,10 +192,10 @@ pub fn initiate_arp_handler(app_states: Vec<AppState>) {
                         thread::sleep(Duration::from_secs(1));
                     }
                 }
-            }
-            Err(e) => {
-                println!("error obtaining mutex lock: {}", e);
-                // HttpResponse::InternalServerError().finish()
+                Err(e) => {
+                    println!("error obtaining mutex lock: {}", e);
+                    // HttpResponse::InternalServerError().finish()
+                }
             }
         }
     }
