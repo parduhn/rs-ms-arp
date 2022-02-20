@@ -14,6 +14,7 @@ pub struct ArpResponses {
     pub results: Vec<ArpResponse>,
 }
 
+#[derive(Debug)]
 pub struct AppState {
     pub knowns: Arc<Mutex<ArpResponses>>,
     pub interface: NetworkInterface,

@@ -165,6 +165,8 @@ pub fn get_arp_results(
 }
 
 pub fn initiate_arp_handler(app_states: Vec<AppState>) {
+    println!("App states {:?}", &app_states);
+
     for state in &app_states {
         //start channel to listen
         let iface = state.interface.clone();
