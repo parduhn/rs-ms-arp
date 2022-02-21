@@ -142,6 +142,7 @@ pub fn get_arp_results(
 
         let short_mac = &m.mac_addr.to_string()[..8];
         if !ignores_vec.contains(&short_mac) && !knowns.results.contains(&device) {
+            thread::sleep(Duration::from_secs(1));
             match vendor_request(&vendor_url, short_mac) {
                 Ok(s) => {
                     device.vendor_name = s.clone();
@@ -158,8 +159,6 @@ pub fn get_arp_results(
                 None => device.vendor_name = "stillunkown".to_string(),
             }
         }
-
-        thread::sleep(Duration::from_secs(1));
     }
     knowns.results.clone()
 }
