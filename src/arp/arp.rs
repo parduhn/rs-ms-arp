@@ -176,7 +176,6 @@ pub fn initiate_arp_handler(app_states: Vec<AppState>) {
     loop {
         for state in &app_states {
             let iface = state.interface.clone();
-            let mut response = Vec::new();
             match state.knowns.lock() {
                 Ok(mut k) => {
                     //read list of knowns,
@@ -185,6 +184,7 @@ pub fn initiate_arp_handler(app_states: Vec<AppState>) {
                         "---------------------------------------- Interface {:?}",
                         state.interface.name
                     );
+                    let mut response = Vec::new();
                     response = get_arp_results(iface.clone(), &mut k, &state.rx);
                     for device in &response {
                         mq::send(device);
