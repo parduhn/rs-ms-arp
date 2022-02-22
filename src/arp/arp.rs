@@ -188,8 +188,10 @@ pub fn initiate_arp_handler(app_states: Vec<AppState>) {
                     let mut response = Vec::new();
                     response = get_arp_results(iface.clone(), &mut k, &state.rx);
                     for device in &response {
-                        mq::send(device);
-                        thread::sleep(Duration::from_secs(1));
+                        if device.mac_addr != state.interface.mac.unwrap().to_string() {
+                            mq::send(device);
+                            thread::sleep(Duration::from_secs(1));
+                        }
                     }
                 }
                 Err(e) => {
