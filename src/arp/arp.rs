@@ -181,8 +181,9 @@ pub fn initiate_arp_handler(app_states: Vec<AppState>) {
                     //read list of knowns,
                     //if a mac addr on local network is not in list of knowns, call vendor api, then store results from api back into knowns
                     println!(
-                        "---------------------------------------- Interface {:?}",
-                        state.interface.name
+                        "---------------------------------------- Interface {:?}, mac: {:?}",
+                        state.interface.name,
+                        state.interface.mac.unwrap()
                     );
                     let mut response = Vec::new();
                     response = get_arp_results(iface.clone(), &mut k, &state.rx);
