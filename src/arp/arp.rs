@@ -189,6 +189,7 @@ pub fn initiate_arp_handler(app_states: Vec<AppState>) {
                     response = get_arp_results(iface.clone(), &mut k, &state.rx);
                     for device in &response {
                         if device.mac_addr != state.interface.mac.unwrap().to_string() {
+                            //dont send own informations (for now, since it is doubled in enp2s0)
                             mq::send(device);
                             thread::sleep(Duration::from_secs(1));
                         }
