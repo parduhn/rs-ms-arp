@@ -163,6 +163,5 @@ fi
   
 deploy ${destination}
 
-echo -e "${GREEN}[SUCCESS]${NC} Finised."
-log "All done. "
+log "Service done. "
 exit 0;
