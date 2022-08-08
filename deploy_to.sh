@@ -121,8 +121,6 @@ deploy () {
     
     copy_file "./${service}" "${destination}"
 
-    cd ${current_directory}
-
     if [[ $? -eq 0 ]];
     then
         log "Increase version"
@@ -132,6 +130,7 @@ deploy () {
             cargo set-version --bump patch
         fi
     fi
+    cd ${current_directory}
 }
 
 # ------------------ main execution -------------------------
