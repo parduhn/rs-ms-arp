@@ -15,7 +15,7 @@ current_directory=`pwd`
 
 #working parameter
 RED='\033[0;31m'
-# ORANGE='\033[0;33m'
+ORANGE='\033[0;33m'
 NC='\033[0m' # No Color
 
 
@@ -93,7 +93,7 @@ copy_file () {
       log "Success: rsync copied file."
       return 0
     else
-      log -e "Error at rsync"
+      log -w "Error at rsync"
       return 1
     fi
 
