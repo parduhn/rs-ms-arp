@@ -86,10 +86,10 @@ copy_file () {
     if [[ $? -eq 0 ]];
     then
       log "Success: rsync copied file."
-      exit 0
+      return 0
     else
       log -e "Error at rsync"
-      exit 1
+      return 1
     fi
 
 }
