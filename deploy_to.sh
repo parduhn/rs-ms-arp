@@ -37,9 +37,10 @@ log() {
   fi
   if [[ $1 == '-w' ]]; then
     echo "${ORANGE}[WARNING]${NC} $2"
-  fi
-  if [[ $verbose == "true" ]]; then 
-    echo "[DEBUG] $1"
+  else 
+    if [[ $verbose == "true" ]]; then 
+        echo "[DEBUG] $1"
+    fi
   fi
 }
 
