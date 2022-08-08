@@ -83,10 +83,10 @@ copy_file () {
    if [[ $dry_run == "true" ]];  
     then
       log "     rsync --dry-run  -av --progress --exclude='.*' ${service} ${destination}"  
-      rsync --dry-run -v -av --progress --exclude='.*' ${service} ${destination}
+      rsync --dry-run -v -av --progress --exclude='.*' ./${service} ${destination}
     else 
-      log "     rsync -av --progress --exclude='.*' ${service} ${destination}"  
-      rsync -av --progress --exclude='.*' ${service}" ${destination}"
+      log "     rsync -av --progress --exclude='.*' ./${service} ${destination}"  
+      rsync -av --progress --exclude='.*' ./${service}" ${destination}"
     fi
 
     if [[ $? -eq 0 ]];
