@@ -82,6 +82,16 @@ copy_file () {
       log "     rsync -av --progress --exclude='.*' ${service} ${destination}"  
       rsync -av --progress --exclude='.*' ${service}" ${destination}"
     fi
+
+    if [[ $? -eq 0 ]];
+    then
+      log "Success: rsync copied file."
+      exit 0
+    else
+      log -e "Error at rsync"
+      exit 1
+    fi
+
 }
 
 deploy () {
@@ -113,14 +123,15 @@ deploy () {
 
     cd ${current_directory}
 
-
-    log "Increase version"
-    log "cargo set-version --bump patch"
-    if [[ $dry_run != "true" ]];  
+    if [[ $? -eq 0 ]];
     then
-        cargo set-version --bump patch
+        log "Increase version"
+        log "cargo set-version --bump patch"
+        if [[ $dry_run != "true" ]];  
+        then
+            cargo set-version --bump patch
+        fi
     fi
-
 }
 
 # ------------------ main execution -------------------------
