@@ -35,12 +35,12 @@ log() {
     echo "${RED}[ERROR]${NC} $2"
     exit 0;
   fi
-  if [[ $1 == '-w' ]]; then
-    echo "${ORANGE}[WARNING]${NC} $2"
-  else 
+#   if [[ $1 == '-w' ]]; then
+#     echo "${ORANGE}[WARNING]${NC} $2"
+#   else 
     if [[ $verbose == "true" ]]; then 
         echo "[DEBUG] $1"
-    fi
+    # fi
   fi
 }
 
@@ -93,7 +93,7 @@ copy_file () {
       log "Success: rsync copied file."
       return 0
     else
-      log -w "Error at rsync"
+      log -e "Error at rsync"
       return 1
     fi
 
