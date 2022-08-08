@@ -32,11 +32,11 @@ usage(){
 # logging 
 log() {
   if [[ $1 == '-e' ]]; then
-    echo $1 "${RED}[ERROR]${NC} $2"
+    echo "${RED}[ERROR]${NC} $2"
     exit 0;
   fi
   if [[ $1 == '-w' ]]; then
-    echo $1 "${ORANGE}[WARNING]${NC} $2"
+    echo "${ORANGE}[WARNING]${NC} $2"
   fi
   if [[ $verbose == "true" ]]; then 
     echo "[DEBUG] $1"
