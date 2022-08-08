@@ -15,7 +15,7 @@ current_directory=`pwd`
 
 #working parameter
 RED='\033[0;31m'
-ORANGE='\033[0;33m'
+# ORANGE='\033[0;33m'
 NC='\033[0m' # No Color
 
 
@@ -35,12 +35,12 @@ log() {
     echo "${RED}[ERROR]${NC} $2"
     exit 0;
   fi
-#   if [[ $1 == '-w' ]]; then
-#     echo "${ORANGE}[WARNING]${NC} $2"
-#   else 
+  if [[ $1 == '-w' ]]; then
+    echo "${ORANGE}[WARNING]${NC} $2"
+  else
     if [[ $verbose == "true" ]]; then 
         echo "[DEBUG] $1"
-    # fi
+    fi
   fi
 }
 
