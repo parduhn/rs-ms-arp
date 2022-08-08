@@ -16,6 +16,7 @@ current_directory=`pwd`
 #working parameter
 RED='\033[0;31m'
 ORANGE='\033[0;33m'
+GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 
@@ -162,5 +163,6 @@ fi
   
 deploy ${destination}
 
+echo -e "${GREEN}[SUCCESS]${NC} Finised."
 log "All done. "
 exit 0;
