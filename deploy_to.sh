@@ -79,7 +79,8 @@ copy_file () {
    source="${1}"
    destination="${2}"
 
-   log "Run:  "
+
+   log "Run: from `pwd` "
    if [[ $dry_run == "true" ]];  
     then
       log "     rsync --dry-run  -av --progress --exclude='.*' ${service} ${destination}"  
