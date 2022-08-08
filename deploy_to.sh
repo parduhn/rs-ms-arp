@@ -15,6 +15,7 @@ current_directory=`pwd`
 
 #working parameter
 RED='\033[0;31m'
+ORANGE='\033[0;33m'
 NC='\033[0m' # No Color
 
 
@@ -33,6 +34,9 @@ log() {
   if [[ $1 == '-e' ]]; then
     echo $1 "${RED}[ERROR]${NC} $2"
     exit 0;
+  fi
+  if [[ $1 == '-w' ]]; then
+    echo $1 "${ORANGE}[WARNING]${NC} $2"
   fi
   if [[ $verbose == "true" ]]; then 
     echo "[DEBUG] $1"
@@ -88,7 +92,7 @@ copy_file () {
       log "Success: rsync copied file."
       return 0
     else
-      log -e "Error at rsync"
+      log -w "Error at rsync"
       return 1
     fi
 
