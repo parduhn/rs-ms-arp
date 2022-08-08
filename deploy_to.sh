@@ -36,7 +36,7 @@ log() {
     exit 0;
   fi
   if [[ $1 == '-w' ]]; then
-    echo -w "${ORANGE}[WARNING]${NC} $2"
+    echo -e "${ORANGE}[WARNING]${NC} $2"
   else
     if [[ $verbose == "true" ]]; then 
         echo "[DEBUG] $1"
@@ -134,7 +134,10 @@ deploy () {
         then
             cargo set-version --bump patch
         fi
+    else 
+      log "Skip deployment"
     fi
+
     cd ${current_directory}
 }
 
