@@ -27,6 +27,7 @@ usage(){
   echo "    $file_name -l <location>           Server and location for rsync"
   echo "    $file_name -v <boolean>            Verbose to log actions."
   echo "    $file_name -d <boolean>            Dry-run and verbose to log actions."
+  echo "Example:  $file_name -l 'hayo@10.1.2.1:~/timeover/frontend' -v true"
   log "Exit on help request."
   exit 1
 }
