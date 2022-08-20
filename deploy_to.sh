@@ -145,7 +145,7 @@ deploy () {
 
 # ------------------ main execution -------------------------
 
-echo "Use Option   -h for help. You will be asked for multiple times to enter password of server."
+# echo "Use Option   -h for help. You will be asked for multiple times to enter password of server."
 
 parameter_check "$@"
 log "file_name: $file_name"
@@ -162,6 +162,7 @@ then
   usage
 fi
   
+echo "Deploy ms-arp"
 deploy ${destination}
 
 log "Service done. "
