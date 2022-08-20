@@ -6,6 +6,7 @@
 # at last, it copies the file timeover_run.sh to the $HOME/timeover folder 
 
 # global vars
+service="See in Cargo.toml"
 file_name=`basename "$0"`
 # default values
 verbose=""
@@ -84,9 +85,11 @@ copy_file () {
    if [[ $dry_run == "true" ]];  
     then
       log "     rsync --dry-run  -av --progress --exclude='.*' ${source} ${destination}"  
+      echo "Deploy service ${service}. Server password needed."
       rsync --dry-run -v -av --progress --exclude='.*' "${source}" "${destination}"
     else 
       log "     rsync -av --progress --exclude='.*' ${source} ${destination}"  
+      echo "Deploy service ${service}. Server password needed."
       rsync -av --progress --exclude='.*' "${source}" "${destination}"
     fi
 
@@ -162,7 +165,6 @@ then
   usage
 fi
   
-echo "Deploy ms-arp"
 deploy ${destination}
 
 log "Service done. "
