@@ -83,11 +83,11 @@ copy_file () {
    log "Run: from `pwd` "
    if [[ $dry_run == "true" ]];  
     then
-      log "     rsync --dry-run  -av --progress --exclude='.*' ${service} ${destination}"  
-      rsync --dry-run -v -av --progress --exclude='.*' "${service}" "${destination}"
+      log "     rsync --dry-run  -av --progress --exclude='.*' ${source} ${destination}"  
+      rsync --dry-run -v -av --progress --exclude='.*' "${source}" "${destination}"
     else 
-      log "     rsync -av --progress --exclude='.*' ${service} ${destination}"  
-      rsync -av --progress --exclude='.*' "${service}" "${destination}"
+      log "     rsync -av --progress --exclude='.*' ${source} ${destination}"  
+      rsync -av --progress --exclude='.*' "${source}" "${destination}"
     fi
 
     if [[ $? -eq 0 ]];
